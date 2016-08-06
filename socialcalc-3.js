@@ -3201,6 +3201,7 @@ SocialCalc.ExecuteSheetCommand = function(sheet, cmd, saveundo) {
       case "settimetrigger":    
       case "sendemail":    
       case "submitform":    
+      case "updateopsettings":
     	  // email/form/timetrigger handled by server, so ignore here
     	  break;
          // } eddy ExecuteSheetCommand 

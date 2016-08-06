@@ -4082,6 +4082,7 @@ SocialCalc.ExecuteSheetCommand = function(sheet, cmd, saveundo) {
       case "settimetrigger":    
       case "sendemail":    
       case "submitform":    
+      case "updateopsettings":
     	  // email/form/timetrigger handled by server, so ignore here
     	  break;
          // } eddy ExecuteSheetCommand 
@@ -7812,7 +7813,7 @@ SocialCalc.CreateTableEditor = function(editor, width, height) {
    }
 
    td = document.createElement("td"); // logo display: Required by CPAL License for this code!
-   if (SocialCalc._app) { // in app right align Required logo
+   if (SocialCalc._app) { // in app right align Required CPAL License logo
      td.style.background="url("+editor.imageprefix+"logo.gif) no-repeat right center";
    } else {
      td.style.background="url("+editor.imageprefix+"logo.gif) no-repeat center center";
@@ -8281,7 +8282,10 @@ SocialCalc.EditorSheetStatusCallback = function(recalcdata, status, arg, editor)
       case "confirmemailsent":
         break;
       // } EditorSheetStatusCallback eddy 
-         
+      case "updatingopsettings":
+      case "confirmupdateop":
+         break;
+
       default:
     	 alert("Unknown status: "+status);
          break;
@@ -8348,6 +8352,11 @@ SocialCalc.EditorGetStatuslineString = function(editor, status, arg, params) {
         	 params.emailing = "done";
          }
          // } eddy EditorGetStatuslineString 
+         if (params.updatingopsettings == "updated") {
+            progress = params.updatingopresponse;
+            params.updatingopresponse = "";
+            params.updatingopsettings = "done";
+         }
          break;
          
       case "calcorder":
@@ -8384,6 +8393,14 @@ SocialCalc.EditorGetStatuslineString = function(editor, status, arg, params) {
      	 params.emailreponse += arg;
          break;    	  
       // } eddy EditorGetStatuslineString 
+      case "updateopsettings":
+         params.updateopsettings = "updating";
+         params.updateopresponse = "";
+      case "confirmupdateop":
+         params.updatingopsettings = "updated";
+         if (typeof params.updatingopresponse === 'undefined') params.updatingopresponse = "";
+         params.updatingopresponse += arg;
+         break;
          
       default:
          progress = status;
@@ -8399,7 +8416,12 @@ SocialCalc.EditorGetStatuslineString = function(editor, status, arg, params) {
   	 progress += params.emailreponse;
    }   
    // } eddy EditorGetStatuslineString 
-   
+   if (params.updatingopsettings == "updating") {
+      progress = "Updating Order Presc. settings...";
+   }
+   if (params.updatingopsettings == "updated") {
+      progress = params.updatingopresponse;
+   }
    if (!progress && params.calculating) {
       progress = scc.s_statusline_calculating;
       }
@@ -9664,6 +9686,7 @@ SocialCalc.EditedTriggerCell  = function(actionFormulaCells, editedCellRef, edit
             if(typeof parameters === 'undefined') continue;	
 			
 			switch(parameters.function_name) {
+              case "ONEDITDO":
 				  case "EMAILONEDIT" :
 				  case "EMAILONEDITIF" :
 					  cmdline = "setemailparameters "+actionCellId+ " " + editedCellRef;
@@ -19916,6 +19939,7 @@ SocialCalc.Formula.IoFunctions = function(fname, operand, foperand, sheet, coord
 
    var argList = {
 				 BUTTON: [2]
+        ,ONEDITDO: [4, 4, 0]
         ,IMAGEBUTTON: [2]
    			,EMAIL: [14, 14, 14, 14]
 				,EMAILIF: [13, 14, 14, 14, 14]
@@ -20094,7 +20118,13 @@ SocialCalc.Formula.IoFunctions = function(fname, operand, foperand, sheet, coord
           resulttype = "ti"+fname; // (t)ext value with (i)nterface (,) 
           result = "Send Now";
           break;
-		 
+		  
+      case "ONEDITDO":
+          resulttype = "ti"+fname;
+          // if 2nd arg is a text, display it; else display blank
+          result = operand_type[2] == 't' ? operand_value[2] : '';
+          break;
+
       case "CHECKBOX":
       case "RADIOBUTTON":
 	     if(operand_type[1].charAt(0) == 't') {
@@ -20212,7 +20242,7 @@ SocialCalc.Formula.IoFunctions = function(fname, operand, foperand, sheet, coord
           showGridDimension(sheet,  sheet.attribs.lastrow,  sheet.rowattribs.hide, showrows, getRowIndex);
           lastShowDimension = 0;
           showGridDimension(sheet,  sheet.attribs.lastcol,  sheet.colattribs.hide, showcols, SocialCalc.rcColname );
-          // control width of html - colpanes[length].last = usermaxcol - see FitToEditTable
+          // control width of html - for mobile app - as better to use native scroll rather than SocialCalc scroll bar - colpanes[length].last = usermaxcol - see FitToEditTable
           sheet.attribs.usermaxcol = lastShowDimension;
           
           if(forceRender) {
@@ -20221,10 +20251,8 @@ SocialCalc.Formula.IoFunctions = function(fname, operand, foperand, sheet, coord
             spreadsheet.editor.context.rowpanes[0].first = 1; // reset scroll bar to first row  
             spreadsheet.editor.context.CalculateColWidthData();
             
-            //spreadsheet.editor.FitToEditTable();
             spreadsheet.width = spreadsheet.editor.context.totalwidth;
             spreadsheet.height = 2500;
-//            spreadsheet.DoOnResize();
             spreadsheet.editor.ResizeTableEditor(spreadsheet.editor.context.totalwidth,2500);  // 2500 is page height constant - fix issue with mobile device - Used constant because could not see an easy way to pre-calculate height 
           }
           
@@ -20259,6 +20287,7 @@ SocialCalc.Formula.FunctionList["AUTOCOMPLETE"] = [SocialCalc.Formula.IoFunction
 SocialCalc.Formula.FunctionList["SELECT"] = [SocialCalc.Formula.IoFunctions, -2, "value, range or csv_text [,size]", "", "gui", "<select size='<%=html1_value%>' id='SELECT_<%=cell_reference%>' onchange=\"SocialCalc.TriggerIoAction.SelectList('<%=cell_reference%>')\" <%=html0_value%>><%=html2_value%></select>", "Input" ];
 SocialCalc.Formula.FunctionList["CHECKBOX"] = [SocialCalc.Formula.IoFunctions, 1, "value", "", "gui", "<input type='checkbox' id='CHECKBOX_<%=cell_reference%>' <%=checked%> onblur='SocialCalc.CmdGotFocus(null);' onchange=\"SocialCalc.TriggerIoAction.CheckBox('<%=cell_reference%>')\" >", "Input" ];
 SocialCalc.Formula.FunctionList["RADIOBUTTON"] = [SocialCalc.Formula.IoFunctions, 2, "value, groupname", "", "gui", "<input type='radio' value='<%=cell_reference%>' id='RADIOBUTTON_<%=cell_reference%>' <%=checked%> name='<%=parameter1_value%>' onblur=\"SocialCalc.CmdGotFocus(null);\" onclick=\"SocialCalc.TriggerIoAction.RadioButton('<%=parameter1_value%>');\" >", "Input" ];
+SocialCalc.Formula.FunctionList["ONEDITDO"] = [SocialCalc.Formula.IoFunctions, 3, "trigger_range, name_range_or_text, id", "", "action", "<%=formated_value%>", "EventTree"];
 
 SocialCalc.Formula.FunctionList["COPYVALUE"] = [SocialCalc.Formula.IoFunctions, 3, "trigger_cell, destinationCell, value_or_range", "", "action", "", "EventTree"];
 SocialCalc.Formula.FunctionList["COPYFORMULA"] = [SocialCalc.Formula.IoFunctions, 3, "trigger_cell, destinationCell, formula_range", "", "action", "", "EventTree"];
@@ -20680,6 +20709,7 @@ SocialCalc.TriggerIoAction.Email = function(emailFormulaCellId, optionalTriggerC
 
     
     switch (parameters.function_name) {
+        case "ONEDITDO":
         case "EMAILONEDIT":
         case "EMAILONEDITIF":
 	       if(optionalTriggerCellId && parameters[0].type == 'coord' && parameters[0].value == optionalTriggerCellId ) optionalTriggerCellId = null;
@@ -20691,6 +20721,21 @@ SocialCalc.TriggerIoAction.Email = function(emailFormulaCellId, optionalTriggerC
      var setStatusBarMessage = false;
 
    var emailContentsList = [];
+
+   if (parameters.function_name == "ONEDITDO") {
+    // loop thru each involved cell...
+    for (var rangeIndex = maxRangeSize - 1; rangeIndex > -1; rangeIndex--) {
+      // skip cells that didn't trigger the edit
+      if (optionalTriggerCellId && optionalTriggerCellId != parameterCellRefs[0][rangeIndex]) continue;
+
+      var valueRangeIndex = (rangeIndex >= parameterValues[0].length) ? 0 : rangeIndex;
+      var nameRangeIndex = (rangeIndex >= parameterValues[1].length) ? 0 : rangeIndex;
+
+      sheet.ScheduleSheetCommands('updateopsettings '+parameterValues[1][nameRangeIndex]+' '+parameterValues[0][valueRangeIndex]+' '+parameters[2].value,  false);
+      SocialCalc.EditorSheetStatusCallback(null, "updatingopsettings", null, spreadsheet.editor);
+    }
+    return [];
+   }
 
 	 for(var rangeIndex = maxRangeSize -1; rangeIndex > -1; rangeIndex-- ) {
 		 
@@ -27400,7 +27445,7 @@ SocialCalc.GetSpreadsheetViewerObject = function() {
 //
 
 SocialCalc.DoOnResize = function(spreadsheet) {
-   
+
    var v;
    var views = spreadsheet.views;
 
@@ -27413,7 +27458,7 @@ SocialCalc.DoOnResize = function(spreadsheet) {
       v.style.height = (spreadsheet.height-spreadsheet.nonviewheight) + "px";
       }
 
-   if(SocialCalc._app) return; // app has fixed size - for mobile
+   if(SocialCalc._app) return; // app has no scroll bars and keep normal HTML style page scroll - for mobile
    spreadsheet.editor.ResizeTableEditor(spreadsheet.width, spreadsheet.height-spreadsheet.nonviewheight);
 
    }

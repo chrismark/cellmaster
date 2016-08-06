@@ -70,6 +70,7 @@ Worker ||= class => (code) ->
   DB = @include \db
   EXPIRE = @EXPIRE
   emailer = @include \emailer
+  dbupdater = @include \dbupdater
 
   
   #eddy dataDir {
@@ -133,6 +134,9 @@ Worker ||= class => (code) ->
           #console.log "------ send email --------"
           #console.log " to:"+commandParameters[1]+" subject:"+commandParameters[2]+" body:"+commandParameters[3]             
           postMessage { type: \sendemailout, emaildata: { to: commandParameters[1].replace(/%20/g,' '), subject: commandParameters[2].replace(/%20/g,' '), body:commandParameters[3].replace(/%20/g,' ')  } }
+        if commandParameters[0] is \updateopsettings
+          postMessage { type: \updateopsettingsout, updateopdata: { column: commandParameters[1].replace(/%20/g, ' '), 
+          value: commandParameters[2].replace(/%20/g, ' '), id: commandParameters[3].replace(/%20/g, ' ') } }
         window.ss.ExecuteCommand command
       | \recalc
         SocialCalc.RecalcLoadedSheet ref, snapshot, true
@@ -204,7 +208,7 @@ Worker ||= class => (code) ->
       #console.log "==> Regenerated snapshot #{logdate.getFullYear() }-#{(logdate.getMonth()) + 1 }-#{logdate.getDate()} #{logdate.getHours()}:#{logdate.getMinutes()}:#{logdate.getSeconds()} for #room"
       DB.expire "snapshot-#room", EXPIRE if EXPIRE
     w.onerror = -> console.log it
-    w.onmessage = ({ data: { type, snapshot, html, csv, ref, parts, save, emaildata, timetriggerdata } }) -> switch type
+    w.onmessage = ({ data: { type, snapshot, html, csv, ref, parts, save, emaildata, updateopdata, timetriggerdata } }) -> switch type
     | \snapshot   => w.on-snapshot snapshot
     | \save     => w.on-save save
     | \html     => w.on-html html
@@ -241,6 +245,13 @@ Worker ||= class => (code) ->
       emailer.sendemail emaildata.to, emaildata.subject, emaildata.body,  (message) ->
         io.sockets.in "log-#room" .emit \data {
           type: \confirmemailsent
+          message
+        }
+    | \updateopsettingsout
+      console.log "onmessage "+updateopdata.column+" "+updateopdata.value+" "+updateopdata.id
+      dbupdater.update updateopdata.id, updateopdata.column, updateopdata.value, (message) ->
+        io.sockets.in "log-#room" .emit \data {
+          type: \confirmupdateop
           message
         }
     | \load-sheet

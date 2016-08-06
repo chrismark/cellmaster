@@ -99,6 +99,7 @@
       editor = ss.editor
       switch @data.type
       | \confirmemailsent => SocialCalc.EditorSheetStatusCallback(null, "confirmemailsent", @data.message, editor);
+      | \confirmupdateop => SocialCalc.EditorSheetStatusCallback(null, "confirmupdateop", @data.message, editor);
       | \chat   => window.addmsg? @data.msg
       | \ecells   
         break if SocialCalc._app 
