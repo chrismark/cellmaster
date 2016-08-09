@@ -1118,14 +1118,14 @@ SocialCalc.EditorGetStatuslineString = function(editor, status, arg, params) {
      	 params.emailreponse += arg;
          break;    	  
       // } eddy EditorGetStatuslineString 
-      case "updateopsettings":
-         params.updateopsettings = "updating";
-         params.updateopresponse = "";
+      case "updatingopsettings":
+         params.updatingopsettings = "updating";
+         params.updatingopresponse = "";
       case "confirmupdateop":
          params.updatingopsettings = "updated";
          if (typeof params.updatingopresponse === 'undefined') params.updatingopresponse = "";
          params.updatingopresponse += arg;
-         break;
+         //break;
          
       default:
          progress = status;
