@@ -4933,7 +4933,7 @@ SocialCalc.Formula.IoFunctions = function(fname, operand, foperand, sheet, coord
 
    var argList = {
 				 BUTTON: [2]
-        ,ONEDITDO: [4, 4, 0]
+        ,ONEDITDO: [12, 14, 1]
         ,IMAGEBUTTON: [2]
    			,EMAIL: [14, 14, 14, 14]
 				,EMAILIF: [13, 14, 14, 14, 14]
@@ -5272,6 +5272,7 @@ SocialCalc.Formula.FunctionList["IMAGEBUTTON"] = [SocialCalc.Formula.IoFunctions
 SocialCalc.Formula.FunctionList["EMAIL"] = [SocialCalc.Formula.IoFunctions, -3, "to_range subject_range, body_range", "", "action", "<button type='button' onclick=\"SocialCalc.TriggerIoAction.Email('<%=cell_reference%>');\"><%=formated_value%></button>", "ParameterList" ];
 SocialCalc.Formula.FunctionList["EMAILIF"] = [SocialCalc.Formula.IoFunctions, -4, "condition_range, to_range subject_range, body_range", "", "action", "<button type='button' onclick=\"SocialCalc.TriggerIoAction.Email('<%=cell_reference%>');\"><%=formated_value%></button>", "ParameterList" ];
 SocialCalc.Formula.FunctionList["EMAILONEDIT"] = [SocialCalc.Formula.IoFunctions, -4, "editRange, to_range subject_range, body_range", "", "action", "<button type='button' onclick=\"SocialCalc.TriggerIoAction.Email('<%=cell_reference%>');\"><%=formated_value%></button>", "EventTree"];
+SocialCalc.Formula.FunctionList["ONEDITDO"] = [SocialCalc.Formula.IoFunctions, -2, "trigger_range, name_range_or_text, id", "", "action", "<%=formated_value%>", "EventTree"];
 SocialCalc.Formula.FunctionList["EMAILAT"] = [SocialCalc.Formula.IoFunctions, -4, "datetime_value, to_range subject_range, body_range", "", "action", "<button type='button' onclick=\"SocialCalc.TriggerIoAction.Email('<%=cell_reference%>');\"><%=formated_value%></button>", "TimeTrigger" ];
 SocialCalc.Formula.FunctionList["EMAILONEDITIF"] = [SocialCalc.Formula.IoFunctions, -5, "editRange, condition, to_range subject_range, body_range", "", "action", "<button type='button' onclick=\"SocialCalc.TriggerIoAction.Email('<%=cell_reference%>');\"><%=formated_value%></button>", "EventTree" ];
 SocialCalc.Formula.FunctionList["EMAILATIF"] = [SocialCalc.Formula.IoFunctions, -5, "datetime_value, condition, to_range subject_range, body_range", "", "action", "<button type='button' onclick=\"SocialCalc.TriggerIoAction.Email('<%=cell_reference%>');\"><%=formated_value%></button>", "TimeTrigger" ];
@@ -5281,7 +5282,6 @@ SocialCalc.Formula.FunctionList["AUTOCOMPLETE"] = [SocialCalc.Formula.IoFunction
 SocialCalc.Formula.FunctionList["SELECT"] = [SocialCalc.Formula.IoFunctions, -2, "value, range or csv_text [,size]", "", "gui", "<select size='<%=html1_value%>' id='SELECT_<%=cell_reference%>' onchange=\"SocialCalc.TriggerIoAction.SelectList('<%=cell_reference%>')\" <%=html0_value%>><%=html2_value%></select>", "Input" ];
 SocialCalc.Formula.FunctionList["CHECKBOX"] = [SocialCalc.Formula.IoFunctions, 1, "value", "", "gui", "<input type='checkbox' id='CHECKBOX_<%=cell_reference%>' <%=checked%> onblur='SocialCalc.CmdGotFocus(null);' onchange=\"SocialCalc.TriggerIoAction.CheckBox('<%=cell_reference%>')\" >", "Input" ];
 SocialCalc.Formula.FunctionList["RADIOBUTTON"] = [SocialCalc.Formula.IoFunctions, 2, "value, groupname", "", "gui", "<input type='radio' value='<%=cell_reference%>' id='RADIOBUTTON_<%=cell_reference%>' <%=checked%> name='<%=parameter1_value%>' onblur=\"SocialCalc.CmdGotFocus(null);\" onclick=\"SocialCalc.TriggerIoAction.RadioButton('<%=parameter1_value%>');\" >", "Input" ];
-SocialCalc.Formula.FunctionList["ONEDITDO"] = [SocialCalc.Formula.IoFunctions, 3, "trigger_range, name_range_or_text, id", "", "action", "<%=formated_value%>", "EventTree"];
 
 SocialCalc.Formula.FunctionList["COPYVALUE"] = [SocialCalc.Formula.IoFunctions, 3, "trigger_cell, destinationCell, value_or_range", "", "action", "", "EventTree"];
 SocialCalc.Formula.FunctionList["COPYFORMULA"] = [SocialCalc.Formula.IoFunctions, 3, "trigger_cell, destinationCell, formula_range", "", "action", "", "EventTree"];
@@ -5726,7 +5726,7 @@ SocialCalc.TriggerIoAction.Email = function(emailFormulaCellId, optionalTriggerC
       var nameRangeIndex = (rangeIndex >= parameterValues[1].length) ? 0 : rangeIndex;
 
       sheet.ScheduleSheetCommands('updateopsettings '+parameterValues[1][nameRangeIndex]+' '+parameterValues[0][valueRangeIndex]+' '+parameters[2].value,  false);
-      SocialCalc.EditorSheetStatusCallback(null, "updatingopsettings", null, spreadsheet.editor);
+      SocialCalc.EditorSheetStatusCallback(null, "updateopsettings", null, spreadsheet.editor);
     }
     return [];
    }
