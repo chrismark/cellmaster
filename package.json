@@ -17,7 +17,7 @@
     "nodemailer": "*",
     "optimist": "*",
     "redis": "0.12.x",
-    "socialcalc": "2.x",
+    "socialcalc": "git://github.com/chrismark/socialcalc.git#master",
     "uuid-pure": "*",
     "xoauth2": "*",
     "zappajs": "0.5.x"
