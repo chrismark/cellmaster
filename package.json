@@ -20,7 +20,8 @@
     "socialcalc": "git://github.com/chrismark/socialcalc.git#master",
     "uuid-pure": "*",
     "xoauth2": "*",
-    "zappajs": "0.5.x"
+    "zappajs": "0.5.x",
+    "massive": "*"
   },
   "optionalDependencies": {
     "webworker-threads": "^0.7.1"

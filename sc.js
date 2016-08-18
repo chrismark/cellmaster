@@ -208,10 +208,11 @@
     return Worker;
   }()));
   this.include = function(){
-    var DB, EXPIRE, emailer, dataDir;
+    var DB, EXPIRE, emailer, dbupdater, dataDir;
     DB = this.include('db');
     EXPIRE = this.EXPIRE;
     emailer = this.include('emailer');
+    dbupdater = this.include('dbupdater');
     dataDir = process.env.OPENSHIFT_DATA_DIR;
     SC._csvToSave = function(csv, cb){
       var w;
@@ -317,6 +318,17 @@
                   to: commandParameters[1].replace(/%20/g, ' '),
                   subject: commandParameters[2].replace(/%20/g, ' '),
                   body: commandParameters[3].replace(/%20/g, ' ')
+                }
+              });
+            }
+            if (commandParameters[0] === 'updateopsettings') {
+              console.log(commandParameters);
+              postMessage({
+                type: 'updateopsettingsout',
+                updateopdata: {
+                  column: commandParameters[1].replace(/%20/g, ' '),
+                  value: commandParameters[2].replace(/%20/g, ' '),
+                  id: commandParameters[3].replace(/%20/g, ' ')
                 }
               });
             }
@@ -439,8 +451,8 @@
         return console.log(it);
       };
       w.onmessage = function(arg$){
-        var ref$, type, snapshot, html, csv, ref, parts, save, emaildata, timetriggerdata, this$ = this;
-        ref$ = arg$.data, type = ref$.type, snapshot = ref$.snapshot, html = ref$.html, csv = ref$.csv, ref = ref$.ref, parts = ref$.parts, save = ref$.save, emaildata = ref$.emaildata, timetriggerdata = ref$.timetriggerdata;
+        var ref$, type, snapshot, html, csv, ref, parts, save, emaildata, updateopdata, timetriggerdata, this$ = this;
+        ref$ = arg$.data, type = ref$.type, snapshot = ref$.snapshot, html = ref$.html, csv = ref$.csv, ref = ref$.ref, parts = ref$.parts, save = ref$.save, emaildata = ref$.emaildata, updateopdata = ref$.updateopdata, timetriggerdata = ref$.timetriggerdata;
         switch (type) {
         case 'snapshot':
           return w.onSnapshot(snapshot);
@@ -487,6 +499,14 @@
           return emailer.sendemail(emaildata.to, emaildata.subject, emaildata.body, function(message){
             return io.sockets['in']("log-" + room).emit('data', {
               type: 'confirmemailsent',
+              message: message
+            });
+          });
+        case 'updateopsettingsout':
+          console.log("onmessage " + updateopdata.column + " " + updateopdata.value + " " + updateopdata.id);
+          return dbupdater.update(updateopdata.id, updateopdata.column, updateopdata.value, function(message){
+            return io.sockets['in']("log-" + room).emit('data', {
+              type: 'confirmupdateop',
               message: message
             });
           });

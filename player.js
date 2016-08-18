@@ -185,6 +185,9 @@
               case 'confirmemailsent':
                 SocialCalc.EditorSheetStatusCallback(null, "confirmemailsent", this.data.message, editor);
                 break;
+              case 'confirmupdateop':
+                SocialCalc.EditorSheetStatusCallback(null, "confirmupdateop", this.data.message, editor);
+                break;
               case 'chat':
                 if (typeof window.addmsg == 'function') {
                   window.addmsg(this.data.msg);
