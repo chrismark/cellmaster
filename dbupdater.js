@@ -19,7 +19,7 @@
     });
     _ = require('underscore');
     mapNamesToFields = ['SKU', 'SKU_DESC', 'SUPPLIER', 'LOT_QTY', 'LOT_TYPE', 'DONT_MATCH_START_INV', 'MIN_ORD', 'MAX_ORD', 'MY_ORDER', 'MIN_HOLD', 'MIN_ORDCYCLE', 'MAX_ORDCYCLE', 'MIN_DELCYLE', 'MAX_DELCYLE', 'SUPPLIER_ADDRESS', 'DELIVERY_ADDRESS', 'CUSTOMER', 'ATTENTION', 'CONSOLIDATE_SAME_SUPPLIER', 'ORDERING_DAYS', 'DONT_MATCH_CURRENT_INV'];
-    dbupdater.update = function(id, name, value, callback){
+    dbupdater.update = function(sku, name, value, callback){
       var field;
       field = mapNamesToFields.indexOf(name);
       if (field === -1) {
@@ -29,7 +29,7 @@
       console.log(name + " = " + field);
       console.log(db.heliexdb);
       return db.mldata.find({
-        mldetailsid: id,
+        s1: sku,
         node: 'settings',
         thedatatype: 'data'
       }, function(err, mldata){
