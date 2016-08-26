@@ -13,15 +13,16 @@
     "iconv-lite": "^0.4.13",
     "j": "0.4.x",
     "livescript": "1.4.x",
+    "massive": "*",
     "minimatch": "*",
     "nodemailer": "*",
     "optimist": "*",
     "redis": "0.12.x",
     "socialcalc": "git://github.com/chrismark/socialcalc.git#master",
+    "uglify-js": "^2.7.3",
     "uuid-pure": "*",
     "xoauth2": "*",
-    "zappajs": "0.5.x",
-    "massive": "*"
+    "zappajs": "0.5.x"
   },
   "optionalDependencies": {
     "webworker-threads": "^0.7.1"
